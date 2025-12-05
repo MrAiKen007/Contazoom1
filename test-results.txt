@@ -1,0 +1,128 @@
+﻿========================================
+TESTES - PROJETO RESOLVIDO
+========================================
+
+=== 1. TABELA DE VENDAS ===
+
+[Campo taxaPlataforma]
+  OK
+True
+
+[Campo frete]
+  OK
+True
+
+[Campo exposicao]
+  OK
+True
+
+[Campo tipoAnuncio]
+  OK
+True
+
+[Campo ads]
+  OK
+True
+
+[Funcao mapListingTypeToExposure]
+  OK
+True
+
+[Funcao calculateFreight]
+  OK
+True
+
+[Funcao calculateMargemContribuicao]
+  OK
+True
+
+[Mapeamento gold_pro -> Premium]
+  OK
+True
+
+[Calculo frete multiplas fontes]
+  OK
+True
+
+=== 2. AUTENTICACAO ML ===
+
+[Schema multiplas contas]
+  OK
+True
+
+[OAuth2 state UUID]
+  OK
+True
+
+[State salvo no banco]
+  OK
+True
+
+[API contas protegida]
+  OK - Protegido (401)
+True
+
+=== 3. SINCRONIZACAO ===
+
+[Retry automatico]
+  OK
+True
+
+[Server-Sent Events]
+  OK
+True
+
+[Salvamento em lotes]
+  OK
+True
+
+[Deduplicacao vendas]
+  FALHOU
+False
+
+[Filtros tabela]
+  FALHOU
+False
+
+[Dashboard usa mesmos campos]
+  FALHOU
+False
+
+=== 4. VALIDACAO FINAL ===
+
+[Servidor respondendo]
+  OK - Status 200
+True
+
+[Pagina principal]
+  OK - Status 200
+True
+
+[API vendas protegida]
+  OK - Protegido (401)
+True
+
+[API dashboard protegida]
+  OK - Protegido (401)
+True
+
+[CMV calculado]
+  OK
+True
+
+[Margem com CMV]
+  OK
+True
+
+========================================
+RESULTADO
+========================================
+Total: 26
+Passou: 23
+Falhou: 3
+
+Sucesso: 88.5%
+
+========================================
+PROJETO NAO RESOLVIDO
+========================================

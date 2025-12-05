@@ -101,7 +101,7 @@ type MeliOrderFreight = {
   quantity: number | null;
   unitPrice: number | null;
   diffBaseList: number | null;
-  
+
   adjustedCost: number | null;
   adjustmentSource: string | null;
 };
@@ -146,26 +146,26 @@ function extractOrderDate(order: unknown): Date | null {
 // FunÃ§Ã£o para debug - identificar qual campo estÃ¡ causando o problema
 function debugFieldLengths(data: any, orderId: string) {
   const fieldLengths: { [key: string]: number } = {};
-  
+
   // Verificar todos os campos de string
   const stringFields = [
-    'orderId', 'userId', 'meliAccountId', 'status', 'conta', 'titulo', 'sku', 
+    'orderId', 'userId', 'meliAccountId', 'status', 'conta', 'titulo', 'sku',
     'comprador', 'logisticType', 'envioMode', 'shippingStatus', 'shippingId',
     'exposicao', 'tipoAnuncio', 'ads', 'plataforma', 'canal'
   ];
-  
+
   stringFields.forEach(field => {
     if (data[field] && typeof data[field] === 'string') {
       fieldLengths[field] = data[field].length;
     }
   });
-  
+
   // Log apenas se algum campo for muito longo
   const longFields = Object.entries(fieldLengths).filter(([_, length]) => length > 100);
   if (longFields.length > 0) {
     console.log(`[DEBUG] Venda ${orderId} - Campos longos:`, longFields);
   }
-  
+
   return fieldLengths;
 }
 
@@ -244,10 +244,10 @@ function calculateFreightAdjustment(
 
   const label =
     logisticType === 'self_service' ? 'FLEX' :
-    logisticType === 'drop_off' ? 'Correios' :
-    logisticType === 'xd_drop_off' ? 'AgÃªncia' :
-    logisticType === 'fulfillment' ? 'FULL' :
-    logisticType === 'cross_docking' ? 'Coleta' : logisticType;
+      logisticType === 'drop_off' ? 'Correios' :
+        logisticType === 'xd_drop_off' ? 'AgÃªncia' :
+          logisticType === 'fulfillment' ? 'FULL' :
+            logisticType === 'cross_docking' ? 'Coleta' : logisticType;
 
   return { adjustedCost: adj, adjustmentSource: label };
 }
@@ -369,7 +369,7 @@ function calculateMargemContribuicao(
 ): { valor: number; isMargemReal: boolean } {
   // Valores base (taxa jÃ¡ vem negativa, frete pode ser + ou -)
   const taxa = taxaPlataforma || 0;
-  
+
   // Se temos CMV, calculamos a margem de contribuiÃ§Ã£o real
   // FÃ³rmula: Margem = Valor Total + Taxa Plataforma + Frete - CMV
   if (cmv !== null && cmv !== undefined && cmv > 0) {
@@ -379,7 +379,7 @@ function calculateMargemContribuicao(
       isMargemReal: true
     };
   }
-  
+
   // Se nÃ£o temos CMV, retornamos a receita lÃ­quida
   // Receita LÃ­quida = Valor Total + Taxa Plataforma + Frete
   const receitaLiquida = valorTotal + taxa + frete;
@@ -619,9 +619,8 @@ async function fetchOrdersPage({
     console.error(`[Sync] âš ï¸ Erro ao buscar pÃ¡gina ${pageNumber}:`, error);
     sendProgressToUser(userId, {
       type: "sync_warning",
-      message: `Erro ao buscar pÃ¡gina ${pageNumber}: ${
-        error instanceof Error ? error.message : "Falha desconhecida"
-      }`,
+      message: `Erro ao buscar pÃ¡gina ${pageNumber}: ${error instanceof Error ? error.message : "Falha desconhecida"
+        }`,
       errorCode: "PAGE_FETCH_ERROR",
     });
     return result;
@@ -659,8 +658,7 @@ async function fetchOrdersPage({
   }
 
   console.log(
-    `[Sync] ðŸ“„ PÃ¡gina ${pageNumber}: ${orders.length} vendas (offset ${offset})${
-      result.total ? ` (${Math.min(offset + orders.length, result.total)}/${result.total})` : ""
+    `[Sync] ðŸ“„ PÃ¡gina ${pageNumber}: ${orders.length} vendas (offset ${offset})${result.total ? ` (${Math.min(offset + orders.length, result.total)}/${result.total})` : ""
     }`,
   );
 
@@ -821,9 +819,8 @@ async function fetchAllOrdersForAccount(
 
         sendProgressToUser(userId, {
           type: "sync_progress",
-          message: `${account.nickname || `Conta ${account.ml_user_id}`}: ${
-            results.length
-          }/${discoveredTotal ?? results.length} vendas baixadas (pï¿½gina ${pageNumber})`,
+          message: `${account.nickname || `Conta ${account.ml_user_id}`}: ${results.length
+            }/${discoveredTotal ?? results.length} vendas baixadas (pï¿½gina ${pageNumber})`,
           current: results.length,
           total: discoveredTotal ?? results.length,
           fetched: results.length,
@@ -836,9 +833,8 @@ async function fetchAllOrdersForAccount(
         console.error(`[Sync] ?? Erro inesperado na pï¿½gina ${pageNumber}:`, error);
         sendProgressToUser(userId, {
           type: "sync_warning",
-          message: `Erro inesperado na pï¿½gina ${pageNumber}: ${
-            error instanceof Error ? error.message : "Falha desconhecida"
-          }`,
+          message: `Erro inesperado na pï¿½gina ${pageNumber}: ${error instanceof Error ? error.message : "Falha desconhecida"
+            }`,
           errorCode: "PAGE_FETCH_ERROR",
         });
       }
@@ -1756,7 +1752,13 @@ function deduplicateOrders(
 async function saveVendasBatch(
   orders: MeliOrderPayload[],
   userId: string,
-  batchSize: number = 100 // OTIMIZADO: aumentado para 100 para batch operations
+  batchSize: number = 100, // OTIMIZADO: aumentado para 100 para batch operations
+  progressContext?: {
+    totalFetched: number;
+    totalExpected: number;
+    accountId?: string;
+    accountNickname?: string;
+  }
 ): Promise<{ saved: number; errors: number }> {
   let saved = 0;
   let errors = 0;
@@ -1850,14 +1852,30 @@ async function saveVendasBatch(
       // Enviar progresso SSE apenas a cada lote (nao a cada venda) para reduzir overhead
       processedCount += batch.length;
       const percentage = Math.round((processedCount / totalOrders) * 100);
+
+      // Usar contexto de progresso se fornecido, senão usar apenas o salvamento
+      const context = progressContext || {
+        totalFetched: totalOrders,
+        totalExpected: totalOrders
+      };
+
+      // Progresso combinado: vendas já processadas (salvas)
+      const combinedProgress = processedCount;
+      const combinedTotal = context.totalExpected;
+      const accountLabel = context.accountNickname || 'Conta';
+
       try {
         sendProgressToUser(userId, {
           type: "sync_progress",
-          message: `Salvando no banco: ${processedCount}/${totalOrders} vendas (${percentage}%)`,
-          current: processedCount,
-          total: totalOrders,
-          fetched: processedCount,
-          expected: totalOrders
+          message: `${accountLabel}: ${combinedProgress}/${combinedTotal} vendas processadas (salvando no banco)`,
+          current: combinedProgress,
+          total: combinedTotal,
+          fetched: combinedProgress,
+          expected: combinedTotal,
+          accountId: context.accountId,
+          accountNickname: context.accountNickname,
+          phase: 'saving',
+          percentage
         });
       } catch (sseError) {
         // Ignorar erros de SSE - nao sao criticos
@@ -2129,7 +2147,7 @@ export async function POST(req: NextRequest) {
   if (requestBody.accountIds && requestBody.accountIds.length > 0) {
     accountsWhere.id = { in: requestBody.accountIds };
   }
-  
+
   const accounts = await prisma.meliAccount.findMany({
     where: accountsWhere,
     orderBy: { created_at: "desc" },
@@ -2146,7 +2164,7 @@ export async function POST(req: NextRequest) {
       fetched: 0,
       expected: 0
     });
-    
+
     return NextResponse.json({
       syncedAt: new Date().toISOString(),
       accounts: [] as AccountSummary[],
@@ -2162,7 +2180,7 @@ export async function POST(req: NextRequest) {
   let totalFetchedOrders = 0;
   let totalSavedOrders = 0;
   let forcedStop = false;
-  
+
   // Preparar steps para cada conta
   const steps = accounts.map(acc => ({
     accountId: acc.id,
@@ -2306,7 +2324,17 @@ export async function POST(req: NextRequest) {
 
           try {
 
-            const batchResult = await saveVendasBatch(fetchedOrders, userId, 50);
+            const batchResult = await saveVendasBatch(
+              fetchedOrders,
+              userId,
+              50,
+              {
+                totalFetched: fetchedOrders.length,
+                totalExpected: expectedTotal || fetchedOrders.length,
+                accountId: account.id,
+                accountNickname: account.nickname || `Conta ${account.ml_user_id}`
+              }
+            );
 
             totalSavedOrders += batchResult.saved;
 

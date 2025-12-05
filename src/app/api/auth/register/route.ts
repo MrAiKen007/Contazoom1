@@ -9,7 +9,10 @@ import { hashPassword, generateSessionToken } from '@/lib/auth';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { email, senha, name } = body;
+        const { email, senha, nome, name } = body;
+
+        // Accept both 'nome' (Portuguese) and 'name' (English)
+        const userName = nome || name;
 
         // Validate input
         if (!email || !senha) {
@@ -19,7 +22,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (!name) {
+        if (!userName) {
             return NextResponse.json(
                 { ok: false, error: 'Nome é obrigatório' },
                 { status: 400 }
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
         const newUser = await prisma.user.create({
             data: {
                 email: normalizedEmail,
-                name,
+                name: userName,
                 passwordHash,
             },
             select: {

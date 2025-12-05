@@ -6,7 +6,7 @@ type ProgressPayload = {
   fetched?: number;
   expected?: number;
   accountId?: string;
-  accountNickname?: string;
+  accountNickname?: string | null; // Aceitar null do banco de dados
   [key: string]: any;
 };
 
@@ -20,12 +20,12 @@ export function addUserConnection(userId: string, controller: ReadableStreamDefa
   if (!activeConnections.has(userId)) {
     activeConnections.set(userId, new Set());
   }
-  
+
   const userConnections = activeConnections.get(userId)!;
   userConnections.add(controller);
-  
+
   console.log(`[SSE] Nova conexão para usuário ${userId}. Total: ${userConnections.size}`);
-  
+
   return () => {
     userConnections.delete(controller);
     if (userConnections.size === 0) {
@@ -40,7 +40,7 @@ export function addUserConnection(userId: string, controller: ReadableStreamDefa
  */
 export function sendProgressToUser(userId: string, payload: ProgressPayload) {
   const userConnections = activeConnections.get(userId);
-  
+
   if (!userConnections || userConnections.size === 0) {
     // Debug: descomentar se necessário, mas pode gerar muito log
     // console.log(`[SSE] Nenhuma conexão ativa para usuário ${userId}`);
@@ -51,10 +51,10 @@ export function sendProgressToUser(userId: string, payload: ProgressPayload) {
     ...payload,
     timestamp: new Date().toISOString()
   })}\n\n`;
-  
+
   const encoder = new TextEncoder();
   const encodedMessage = encoder.encode(message);
-  
+
   userConnections.forEach(controller => {
     try {
       controller.enqueue(encodedMessage);
@@ -74,7 +74,7 @@ export function closeUserConnections(userId: string) {
     userConnections.forEach(controller => {
       try {
         controller.close();
-      } catch {} 
+      } catch { }
     });
     activeConnections.delete(userId);
   }
